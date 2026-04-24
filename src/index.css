@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+html, body {
+  @apply bg-[#FFFFFF] text-[#202124] antialiased h-full w-full overflow-hidden;
+}
+
+#root {
+  @apply h-full w-full overflow-hidden;
+}

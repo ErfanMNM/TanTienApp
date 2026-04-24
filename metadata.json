@@ -1,0 +1,6 @@
+{
+  "name": "ERPNext ToDo Cá Nhân",
+  "description": "Ứng dụng quản lý ToDo cá nhân phong cách Google, kết nối ERPNext qua proxy",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

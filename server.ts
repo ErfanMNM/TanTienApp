@@ -1,75 +1,86 @@
 import express from 'express';
-import { createServer as createViteServer } from 'vite';
 import { createProxyMiddleware } from 'http-proxy-middleware';
-import path from 'path';
 import http from 'http';
+import path from 'path';
+import { createServer as createViteServer } from 'vite';
 
 async function startServer() {
   const app = express();
   const server = http.createServer(app);
-  const PORT = 3000;
+  const port = Number(process.env.PORT || 3000);
+  const erpBaseUrl = process.env.ERP_BASE_URL || 'https://erp.mte.vn';
 
-  // Route to scrape CSRF token from ERPNext for the current authenticated user
   app.get('/api/csrf_token', async (req, res) => {
     try {
-      // Need dynamic import due to node-fetch ESM package
-      const fetchApi = (await import('node-fetch')).default || fetch;
-      const resp = await fetchApi('https://erp.mte.vn/app', {
+      const response = await fetch(new URL('/app', erpBaseUrl), {
         headers: {
-          'Cookie': req.headers.cookie || '',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AIStudio'
-        }
+          Cookie: req.headers.cookie || '',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) TanTienApp',
+        },
       });
-      const html = await resp.text();
-      // Match window.csrf_token = "TOKEN";
+      const html = await response.text();
       const match = html.match(/csrf_token\s*=\s*["']([^"']+)["']/);
-      if (match && match[1]) {
+
+      if (match?.[1]) {
         res.json({ csrf_token: match[1] });
-      } else {
-        res.status(404).json({ error: 'CSRF token not found in HTML' });
+        return;
       }
-    } catch (e: any) {
-      res.status(500).json({ error: e.message });
+
+      res.status(404).json({ error: 'CSRF token not found in ERPNext HTML.' });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ error: message });
     }
   });
 
-  // Add the proxy middleware for mapping frontend API calls directly to ERPNext
-  app.use('/api', createProxyMiddleware({
-    target: 'https://erp.mte.vn',
-    changeOrigin: true,
-    pathRewrite: {
-      '^/': '/api/' // Adds back the /api prefix stripped by Express
-    },
-    cookieDomainRewrite: {
-      '*': '' // Crucial: Binds the ERPNext cookie to our current domain
-    },
-    onProxyRes: (proxyRes, req, res) => {
-      // Very Important: Frappe sets cookies as SameSite=Lax, which blocks them in the AI Studio iframe.
-      // We must rewrite the Set-Cookie headers to SameSite=None; Secure.
-      let setCookie = proxyRes.headers['set-cookie'];
-      if (setCookie) {
-        if (!Array.isArray(setCookie)) setCookie = [setCookie];
-        proxyRes.headers['set-cookie'] = setCookie.map(c => {
-          let updated = c.replace(/SameSite=Lax/ig, 'SameSite=None');
-          if (!/Secure/i.test(updated)) {
-            updated += '; Secure';
+  app.use(
+    '/api',
+    createProxyMiddleware({
+      target: erpBaseUrl,
+      changeOrigin: true,
+      pathRewrite: {
+        '^/': '/api/',
+      },
+      cookieDomainRewrite: {
+        '*': '',
+      },
+      headers: {
+        Origin: erpBaseUrl,
+        Referer: `${erpBaseUrl}/`,
+      },
+      on: {
+        proxyReq: (proxyReq) => {
+          proxyReq.setHeader('Origin', erpBaseUrl);
+          proxyReq.setHeader('Referer', `${erpBaseUrl}/`);
+        },
+        proxyRes: (proxyRes) => {
+          let setCookie = proxyRes.headers['set-cookie'];
+          if (!setCookie) {
+            return;
           }
-          if (!/SameSite=None/i.test(updated)) {
-            updated += '; SameSite=None';
-          }
-          // Frappe sometimes misses setting path or we need it strictly
-          return updated;
-        });
-      }
-    },
-    headers: {
-      // Trick the CSRF checks if applicable
-      'Origin': 'https://erp.mte.vn',
-      'Referer': 'https://erp.mte.vn/'
-    }
-  }));
 
-  // Vite middleware for development UI
+          if (!Array.isArray(setCookie)) {
+            setCookie = [setCookie];
+          }
+
+          proxyRes.headers['set-cookie'] = setCookie.map((cookie) => {
+            let updated = cookie.replace(/SameSite=Lax/gi, 'SameSite=None');
+
+            if (!/Secure/i.test(updated)) {
+              updated += '; Secure';
+            }
+
+            if (!/SameSite=None/i.test(updated)) {
+              updated += '; SameSite=None';
+            }
+
+            return updated;
+          });
+        },
+      },
+    }),
+  );
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -77,17 +88,17 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    // Production delivery of built UI
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
+    app.get('*', (_req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 
-  server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  server.listen(port, '0.0.0.0', () => {
+    console.log(`Server running on http://localhost:${port}`);
+    console.log(`Proxy target: ${erpBaseUrl}`);
   });
 }
 
-startServer();
+void startServer();

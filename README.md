@@ -1,20 +1,48 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# TanTienApp
 
-# Run and deploy your AI Studio app
+Ứng dụng `React + Vite + Tailwind` đi kèm một server `Express` để proxy sang ERPNext/Frappe. Repo hỗ trợ hai chế độ dữ liệu:
 
-This contains everything you need to run your app locally.
+- `mock`: dùng dữ liệu giả để phát triển giao diện nhanh.
+- `erpnext`: đăng nhập và thao tác trực tiếp với ERPNext qua proxy `/api`.
 
-View your app in AI Studio: https://ai.studio/apps/bbe936c1-deb9-47d6-b3d4-f576cd4aefdd
+## Yêu Cầu
 
-## Run Locally
+- Node.js 20+.
 
-**Prerequisites:**  Node.js
+## Cấu Hình Môi Trường
 
+Tạo file `.env.local` hoặc `.env`:
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+```env
+PORT=3000
+ERP_BASE_URL=https://erp.mte.vn
+VITE_DATA_SOURCE=mock
+```
+
+Để dùng ERPNext thật, đổi:
+
+```env
+VITE_DATA_SOURCE=erpnext
+```
+
+## Chạy Local
+
+```bash
+npm install
+npm run dev
+```
+
+App chạy tại `http://localhost:3000`.
+
+## Kiểm Tra
+
+```bash
+npm run lint
+npm run build
+```
+
+## Luồng Chính
+
+- Frontend gọi `/api/method/login`, `/api/method/logout`, `/api/method/frappe.auth.get_logged_user`.
+- Todo dùng REST endpoint `/api/resource/ToDo`.
+- Server proxy rewrite cookie và hỗ trợ lấy CSRF token qua `/api/csrf_token`.

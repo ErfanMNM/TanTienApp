@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { checkAuth, login, logout, getTodos, createTodo, updateTodoStatus, type TodoItem } from './api/erpnext';
-import { LogOut, Loading, Plus, CheckCircle2, Circle, Clock, LayoutList, Calendar, Flag, AlertCircle, Home as HomeIcon, FolderKanban, ListTodo, CheckSquare, FileText, Briefcase, PlayCircle } from 'lucide-react';
+import { LogOut, Loading, Plus, CheckCircle2, Circle, Clock, LayoutList, Calendar, Flag, AlertCircle, Home as HomeIcon, FolderKanban, ListTodo, CheckSquare, FileText, Briefcase, PlayCircle, MoreVertical } from 'lucide-react';
 import { cn } from './lib/utils';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
@@ -240,37 +240,68 @@ export default function App() {
 
     if (activeTab === 'projects') {
       return (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold tracking-tight text-gray-900">Dự án</h1>
-            <button className="flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100">
-              <Plus size={16} /> Mới
+            <button className="flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition-colors">
+              <Plus size={16} /> Thêm mới
             </button>
           </div>
           
-          <div className="grid gap-4 sm:grid-cols-2">
-            {[
-              { title: 'Dự án Alpha', status: 'Đang triển khai', id: 'PRJ-24-001', progress: 65, color: 'bg-indigo-600' },
-              { title: 'Tích hợp hệ thống ERP', status: 'Khởi tạo', id: 'PRJ-24-002', progress: 15, color: 'bg-blue-500' },
-              { title: 'Bảo trì App Client', status: 'Hoàn thiện', id: 'PRJ-23-095', progress: 95, color: 'bg-emerald-500' },
-            ].map(proj => (
-              <div key={proj.id} className="cursor-pointer rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:border-indigo-300 hover:shadow-md">
-                <div className="mb-2 flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <Briefcase size={18} className="text-gray-400" />
-                    <h3 className="font-semibold text-gray-900">{proj.title}</h3>
-                  </div>
-                  <span className="rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">{proj.id}</span>
-                </div>
-                <div className="mt-4 mb-1 flex items-center justify-between text-xs text-gray-500">
-                  <span>{proj.status}</span>
-                  <span>{proj.progress}%</span>
-                </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
-                  <div className={cn("h-full rounded-full", proj.color)} style={{ width: `${proj.progress}%` }} />
-                </div>
-              </div>
-            ))}
+          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+            <table className="w-full text-left text-sm text-gray-600">
+              <thead className="border-b border-gray-200 bg-gray-50/80 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <tr>
+                  <th className="px-5 py-4">Mã DA</th>
+                  <th className="px-5 py-4">Tên Dự Án</th>
+                  <th className="px-5 py-4">Trạng Thái</th>
+                  <th className="px-5 py-4 min-w-[150px]">Tiến Độ</th>
+                  <th className="px-5 py-4 text-right"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {[
+                  { title: 'Dự án Alpha', status: 'Đang triển khai', id: 'PRJ-24-001', progress: 65, color: 'bg-indigo-600' },
+                  { title: 'Tích hợp hệ thống ERP', status: 'Khởi tạo', id: 'PRJ-24-002', progress: 15, color: 'bg-blue-500' },
+                  { title: 'Bảo trì App Client', status: 'Hoàn thiện', id: 'PRJ-23-095', progress: 100, color: 'bg-emerald-500' },
+                  { title: 'Thiết kế hệ thống DB', status: 'Tạm dừng', id: 'PRJ-24-004', progress: 40, color: 'bg-orange-500' },
+                ].map(proj => (
+                  <tr key={proj.id} className="transition-colors hover:bg-indigo-50/30">
+                    <td className="whitespace-nowrap px-5 py-4 font-medium text-gray-500">{proj.id}</td>
+                    <td className="whitespace-nowrap px-5 py-4">
+                      <div className="flex items-center gap-2 font-medium text-gray-900">
+                        <Briefcase size={16} className="text-gray-400" />
+                        {proj.title}
+                      </div>
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-4">
+                      <span className={cn(
+                        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+                        proj.status === 'Đang triển khai' && 'bg-blue-50 text-blue-700',
+                        proj.status === 'Khởi tạo' && 'bg-gray-100 text-gray-700',
+                        proj.status === 'Hoàn thiện' && 'bg-emerald-50 text-emerald-700',
+                        proj.status === 'Tạm dừng' && 'bg-orange-50 text-orange-700'
+                      )}>
+                        {proj.status}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-2 w-full max-w-[120px] overflow-hidden rounded-full bg-gray-100">
+                          <div className={cn("h-full rounded-full transition-all duration-500", proj.color)} style={{ width: `${proj.progress}%` }} />
+                        </div>
+                        <span className="text-xs font-semibold tabular-nums text-gray-700">{proj.progress}%</span>
+                      </div>
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-4 text-right">
+                      <button className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 focus:outline-none">
+                        <MoreVertical size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       );
@@ -278,37 +309,66 @@ export default function App() {
 
     if (activeTab === 'tasks') {
       return (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold tracking-tight text-gray-900">Task Nhóm</h1>
-            <button className="flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100">
+            <button className="flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition-colors">
               <Plus size={16} /> Giao việc
             </button>
           </div>
           
-          <div className="flex flex-col gap-3">
-            {[
-              { task: 'Hoàn thiện API thanh toán', project: 'Dự án Alpha', assignee: 'Tuấn', due: 'Ngày mai', status: 'Đang làm' },
-              { task: 'Cập nhật tài liệu UI', project: 'App Client', assignee: 'Hương', due: 'Thứ 6', status: 'Cần duyệt' },
-              { task: 'Sửa lỗi màn hình Login', project: 'Hệ thống ERP', assignee: 'Bạn', due: 'Hôm nay', status: 'Đang làm' },
-            ].map((t, i) => (
-              <div key={i} className="flex cursor-pointer items-center justify-between rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-hover hover:border-indigo-300 hover:bg-indigo-50/10 hover:shadow-md">
-                <div>
-                  <h3 className="font-medium text-gray-900">{t.task}</h3>
-                  <div className="mt-1 flex gap-3 text-xs text-gray-500">
-                    <span className="flex items-center gap-1"><FolderKanban size={12}/> {t.project}</span>
-                    <span className="flex items-center gap-1"><Circle size={12}/> {t.assignee}</span>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <span className={cn(
-                    "rounded px-2 py-0.5 text-xs font-medium",
-                    t.status === 'Đang làm' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'
-                  )}>{t.status}</span>
-                  <span className="text-xs font-medium text-gray-400">{t.due}</span>
-                </div>
-              </div>
-            ))}
+          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+            <table className="w-full text-left text-sm text-gray-600">
+              <thead className="border-b border-gray-200 bg-gray-50/80 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                <tr>
+                  <th className="px-5 py-4">Tên Công Việc</th>
+                  <th className="px-5 py-4">Dự Án</th>
+                  <th className="px-5 py-4">Ng. Phụ Trách</th>
+                  <th className="px-5 py-4">Trạng Thái</th>
+                  <th className="px-5 py-4">Hạn Chót</th>
+                  <th className="px-5 py-4 text-right"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {[
+                  { task: 'Hoàn thiện API thanh toán', project: 'Dự án Alpha', assignee: 'Tuấn', due: 'Ngày mai', status: 'Đang làm' },
+                  { task: 'Cập nhật tài liệu UI', project: 'App Client', assignee: 'Hương', due: 'Thứ 6', status: 'Cần duyệt' },
+                  { task: 'Sửa lỗi màn hình Login', project: 'Hệ thống ERP', assignee: 'Bạn', due: 'Hôm nay', status: 'Đang làm' },
+                  { task: 'Chuẩn bị dữ liệu Test', project: 'Dự án Alpha', assignee: 'Minh', due: 'Tuần sau', status: 'Chưa bắt đầu' },
+                ].map((t, i) => (
+                  <tr key={i} className="transition-colors hover:bg-indigo-50/30">
+                    <td className="whitespace-nowrap px-5 py-4 font-medium text-gray-900">{t.task}</td>
+                    <td className="whitespace-nowrap px-5 py-4">
+                      <span className="flex items-center gap-1.5 text-gray-500">
+                        <FolderKanban size={14} className="text-indigo-400" /> {t.project}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-4">
+                      <span className="flex items-center gap-1.5 text-gray-700 font-medium">
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gray-200 text-[10px] text-gray-600 font-bold uppercase">{t.assignee.charAt(0)}</div>
+                        {t.assignee}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-4">
+                      <span className={cn(
+                        "inline-flex items-center rounded-md px-2 py-1 text-[11px] font-semibold uppercase tracking-wide",
+                        t.status === 'Đang làm' && 'bg-blue-50 text-blue-700',
+                        t.status === 'Cần duyệt' && 'bg-orange-50 text-orange-700',
+                        t.status === 'Chưa bắt đầu' && 'bg-gray-100 text-gray-600'
+                      )}>
+                        {t.status}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-4 text-gray-500 font-medium">{t.due}</td>
+                    <td className="whitespace-nowrap px-5 py-4 text-right">
+                      <button className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 focus:outline-none">
+                        <MoreVertical size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       );
@@ -352,39 +412,62 @@ export default function App() {
                     <p className="text-sm font-medium text-gray-900">Không còn việc bị tồn đọng!</p>
                   </motion.div>
                 ) : (
-                  <motion.div layout className="flex flex-col gap-3">
-                    <AnimatePresence>
-                      {openTodos.map((item) => (
-                        <motion.div 
-                          layout
-                          key={item.name} 
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          className="group relative flex cursor-pointer items-start gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:border-indigo-300 hover:shadow-md"
-                          onClick={() => handleToggleStatus(item)}
-                        >
-                          <button className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded border-2 border-gray-300 text-transparent transition-colors group-hover:border-indigo-500 focus:outline-none">
-                            <CheckCircle2 size={16} strokeWidth={3} className="opacity-0 group-hover:opacity-20" />
-                          </button>
-                          <div className="min-w-0 flex-1">
-                            <h3 className="text-base font-medium text-gray-900">{item.description}</h3>
-                            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-gray-500">
-                              <span className="flex items-center gap-1 rounded bg-gray-100 px-2 py-1 text-gray-600">
-                                <span>{item.name}</span>
-                              </span>
-                              {item.date && (
-                                <span className="flex items-center gap-1">
-                                  <Calendar size={14} />
-                                  {item.date}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  </motion.div>
+                  <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <table className="w-full text-left text-sm text-gray-600">
+                      <thead className="border-b border-gray-200 bg-gray-50/80 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                        <tr>
+                          <th className="w-12 px-5 py-4 text-center"></th>
+                          <th className="px-5 py-4">Tên Todo</th>
+                          <th className="px-5 py-4">Nội Dung</th>
+                          <th className="px-5 py-4">Hạn Chót</th>
+                          <th className="px-5 py-4">Ưu Tiên</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        <AnimatePresence>
+                          {openTodos.map((item) => (
+                            <motion.tr 
+                              layout
+                              key={item.name} 
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.95 }}
+                              className="group cursor-pointer transition-colors hover:bg-indigo-50/30"
+                              onClick={() => handleToggleStatus(item)}
+                            >
+                              <td className="px-5 py-4 text-center">
+                                <button className="mx-auto flex h-6 w-6 shrink-0 items-center justify-center rounded border-2 border-gray-300 text-transparent transition-colors focus:outline-none group-hover:border-indigo-500">
+                                  <CheckCircle2 size={16} strokeWidth={3} className="opacity-0 group-hover:opacity-20" />
+                                </button>
+                              </td>
+                              <td className="whitespace-nowrap px-5 py-4 font-medium text-gray-900">{item.name}</td>
+                              <td className="px-5 py-4 text-gray-700">{item.description}</td>
+                              <td className="whitespace-nowrap px-5 py-4">
+                                {item.date && (
+                                  <span className="flex items-center gap-1.5 text-gray-500">
+                                    <Calendar size={14} className="text-gray-400" />
+                                    {item.date}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="whitespace-nowrap px-5 py-4">
+                                {item.priority === 'High' ? (
+                                  <span className="inline-flex items-center gap-1 rounded bg-orange-50 px-2 py-1 text-xs font-semibold text-orange-600">
+                                    <Flag size={12} />
+                                    Ưu tiên
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-semibold text-gray-500">
+                                    Thường
+                                  </span>
+                                )}
+                              </td>
+                            </motion.tr>
+                          ))}
+                        </AnimatePresence>
+                      </tbody>
+                    </table>
+                  </div>
                 )}
               </section>
 
@@ -395,27 +478,41 @@ export default function App() {
                     <span className="flex h-6 w-6 items-center justify-center rounded-md bg-green-100 text-green-700">{closedTodos.length}</span>
                     Hoàn tất gần đây
                   </h2>
-                  <motion.div layout className="flex flex-col gap-3 opacity-60 transition-opacity hover:opacity-100">
-                    <AnimatePresence>
-                      {closedTodos.map((item) => (
-                        <motion.div 
-                          layout
-                          key={item.name} 
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="group flex cursor-pointer items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 transition-all hover:bg-gray-50"
-                          onClick={() => handleToggleStatus(item)}
-                        >
-                          <button className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded border-2 border-green-500 bg-green-500 text-white focus:outline-none">
-                            <CheckCircle2 size={16} strokeWidth={3} />
-                          </button>
-                          <div className="min-w-0 flex-1">
-                            <h3 className="text-base font-medium text-gray-500 line-through">{item.description}</h3>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  </motion.div>
+                  <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white opacity-70 shadow-sm transition-opacity hover:opacity-100">
+                    <table className="w-full text-left text-sm text-gray-500">
+                      <thead className="border-b border-gray-200 bg-gray-50/80 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                        <tr>
+                          <th className="w-12 px-5 py-4 text-center"></th>
+                          <th className="px-5 py-4">Tên Todo</th>
+                          <th className="px-5 py-4">Nội Dung</th>
+                          <th className="px-5 py-4">Ngày Hoàn Thành</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        <AnimatePresence>
+                          {closedTodos.map((item) => (
+                            <motion.tr 
+                              layout
+                              key={item.name} 
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="group cursor-pointer transition-colors hover:bg-gray-50"
+                              onClick={() => handleToggleStatus(item)}
+                            >
+                              <td className="px-5 py-4 text-center">
+                                <button className="mx-auto flex h-6 w-6 shrink-0 items-center justify-center rounded border-2 border-green-500 bg-green-500 text-white focus:outline-none">
+                                  <CheckCircle2 size={16} strokeWidth={3} />
+                                </button>
+                              </td>
+                              <td className="whitespace-nowrap px-5 py-4 font-medium line-through">{item.name}</td>
+                              <td className="px-5 py-4 line-through">{item.description}</td>
+                              <td className="whitespace-nowrap px-5 py-4">{item.date || 'Gần đây'}</td>
+                            </motion.tr>
+                          ))}
+                        </AnimatePresence>
+                      </tbody>
+                    </table>
+                  </div>
                 </section>
               )}
             </div>
